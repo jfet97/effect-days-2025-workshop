@@ -1,3 +1,4 @@
+import { NodeHttpClient } from "@effect/platform-node"
 import { Layer } from "effect"
 import { ImmunityTokenManager, makeImmunityTokenManager } from "./shared/services/ImmunityTokenManager.js"
 import { makePunDistributionNetwork, PunDistributionNetwork } from "./shared/services/PunDistributionNetwork.js"
@@ -47,4 +48,10 @@ export const MainLayer = Layer.mergeAll(
   ImmunityTokenManagerLayer,
   PunsterClientLayer,
   PunDistributionNetworkLayer
+).pipe(
+  Layer.provide(NodeHttpClient.layerUndici),
+  Layer.provide(Layer.scope)
 )
+
+const _test = Layer.build(MainLayer)
+//    ^?

@@ -45,3 +45,6 @@ export const MainLayer = Layer.mergeAll(
   PunsterClientLayer,
   PunDistributionNetworkLayer
 ).pipe(Layer.provide(NodeHttpClient.layerUndici))
+
+const _test = Layer.build(MainLayer)
+//    ^?

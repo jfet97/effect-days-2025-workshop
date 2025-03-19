@@ -30,4 +30,9 @@ export const main = Effect.gen(function*() {
     description: "A test misbehavior",
     severity: 1
   }))
-})
+}).pipe(
+  Effect.provideService(PunsterClient, {
+    createPun: () => Effect.succeed(testPun),
+    evaluatePun: () => Effect.succeed(testEvaluation)
+  })
+)

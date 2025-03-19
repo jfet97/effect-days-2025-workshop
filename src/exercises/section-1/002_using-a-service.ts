@@ -1,4 +1,4 @@
-import { Effect } from "effect"
+import { Console, Effect } from "effect"
 
 // A pre-defined list of misbehaviors
 import { misbehaviors } from "./fixtures/Misbehaviors.js"
@@ -35,4 +35,25 @@ import { PunsterClient } from "./shared/services/PunsterClient.js"
 
 export const main = Effect.gen(function*() {
   // Your logic goes here
+
+  const PDN = yield* PunDistributionNetwork
+  const PC = yield* PunsterClient
+
+  yield* Effect.all(
+    misbehaviors.map((mb) =>
+      Effect.gen(function*() {
+        const channel = yield* PDN.getChannel(mb)
+        const pun = yield* PC.createPun(mb)
+          .pipe(Effect.catchTags(
+            {
+              "ChildImmuneError": (e) => Effect.fail(e).pipe(Effect.tap(Console.warn(e))),
+              "PunsterFetchError": (e) => Effect.fail(e).pipe(Effect.tap(Console.error(e)))
+            }
+          ))
+        const result = yield* PDN.deliverPun(pun, mb, channel)
+        yield* Console.log(result)
+      })
+    ),
+    { mode: "either" }
+  )
 })

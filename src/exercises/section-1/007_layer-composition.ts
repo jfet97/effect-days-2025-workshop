@@ -1,4 +1,4 @@
-import type { Layer } from "effect"
+import { Layer } from "effect"
 
 /**
  * **Todo List**:
@@ -34,7 +34,7 @@ export declare const NotificationLayer: Layer.Layer<"Notification", "NotifyError
 
 // Target: Layer<"Config" | "Logging", "ConfigError" | "LogError", never>
 
-export const exercise1 = null // Your solution here
+export const exercise1 = Layer.provideMerge(LoggingLayer, ConfigLayer) // Your solution here
 
 // ===========================
 // Exercise 2

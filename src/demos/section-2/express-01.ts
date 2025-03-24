@@ -14,6 +14,8 @@ Effect.gen(function*() {
   })
 
   app.get("/completion", (req, res) => {
+    // for each request, we create a new fiber and put it in the fiber set
+    // when it finishes, it will be removed from the fiber set
     runFork(Effect.gen(function*() {
       const query = req.query.q as string
 
@@ -37,6 +39,7 @@ Effect.gen(function*() {
   yield* Effect.acquireRelease(
     Effect.sync(() => app.listen(3000)),
     (server) =>
+      // to wrap a callback API
       Effect.async((resume) => {
         server.close(() => resume(Effect.void))
       })

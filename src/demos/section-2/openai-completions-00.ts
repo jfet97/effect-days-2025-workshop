@@ -27,12 +27,12 @@ export class OpenAi extends Effect.Service<OpenAi>()("OpenAi", {
         undefined,
         Effect.fn("OpenAi.paginateChunk")(function*(cursor: Page | undefined) {
           const page = yield* Effect.tryPromise({
-            try: () => cursor ? cursor.getNextPage() : f(client),
+            try: () => cursor ? cursor.getNextPage() : f(client), // the first time we call f to get the first page
             catch: (cause) => new OpenAiError({ cause })
           })
           return [
             Chunk.unsafeFromArray(page.getPaginatedItems()),
-            page.hasNextPage() ? Option.some(page) : Option.none()
+            page.hasNextPage() ? Option.some(page) : Option.none() // to stop it at the end of the stream
           ]
         })
       ).pipe(

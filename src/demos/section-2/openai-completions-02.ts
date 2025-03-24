@@ -41,6 +41,19 @@ export class OpenAi extends Effect.Service<OpenAi>()("OpenAi", {
         Stream.withSpan("OpenAi.paginate")
       )
 
+    /**
+     * Creates a `Stream` that interacts with the OpenAI API using the provided function `f`.
+     * The function `f` is expected to return a `Promise` that resolves to an `ApiStreaming.Stream<A>`.
+     * 
+     * The resulting `Stream` handles errors by wrapping them in an `OpenAiError` and includes
+     * tracing information with the span name "OpenAi.stream".
+     * 
+     * @template A - The type of elements emitted by the stream.
+     * @param f - A function that takes an `Api.OpenAI` client and an `AbortSignal`, and returns
+     *            a `Promise` resolving to an `ApiStreaming.Stream<A>`.
+     * @returns A `Stream` of type `Stream.Stream<A, OpenAiError>` that emits elements of type `A`
+     *          or fails with an `OpenAiError`.
+     */
     const stream = <A>(
       f: (client: Api.OpenAI, signal: AbortSignal) => Promise<ApiStreaming.Stream<A>>
     ): Stream.Stream<A, OpenAiError> =>

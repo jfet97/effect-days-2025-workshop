@@ -26,13 +26,19 @@ export class SqlClient extends Effect.Service<SqlClient>()("SqlClient", {
         return []
       }).pipe(Effect.withSpan("SqlClient.query", { attributes: { sql } }))
 
-    // TODO: Add a `stream` method that returns a `Stream` of results
-    //
-    // hint: statements have an .iterate() api
+    const stream = <A>(sql: string, ...params: Array<any>): Stream.Stream<A, SqlError> =>
+      use((db) => {
+        const stmt = db.prepare<Array<any>, A>(sql)
+        return Stream.fromIterable(stmt.iterate(...params))
+      }).pipe(
+        Stream.unwrap,
+        Stream.withSpan("SqlClient.stream", { attributes: { sql } })
+      )
 
     return {
       use,
-      query
+      query,
+      stream
     } as const
   })
 }) {}

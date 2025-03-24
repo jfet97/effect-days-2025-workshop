@@ -3,8 +3,16 @@ import { Effect, Stream } from "effect"
 
 const emitter = new EventTarget()
 
-// TODO: Create a stream that listens to click events
-declare const onClick: Stream.Stream<Event>
+// TODO: Create a stream that listens to click events (the do not support back-pressure)
+const onClick = Stream.asyncPush<Event>(Effect.fnUntraced(function*(emit) {
+  function onClick(event: Event) {
+    emit.single(event)
+  }
+  yield* Effect.addFinalizer(
+    () => Effect.sync(() => document.removeEventListener("click", onClick))
+  )
+  emitter.addEventListener("click", onClick)
+}))
 
 // usage
 

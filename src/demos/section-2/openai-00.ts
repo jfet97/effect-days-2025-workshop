@@ -1,12 +1,31 @@
 import { NodeRuntime } from "@effect/platform-node"
-import { Config, Effect, Layer, Redacted } from "effect"
+import { Config, Data, Effect, Layer, Redacted } from "effect"
 import * as Api from "openai"
 import { TracingLayer } from "../../Tracing.js"
 
+class OpenAIError extends Data.TaggedError("OpenAIError")<{
+  cause: unknown
+}> {}
+
 export class OpenAi extends Effect.Service<OpenAi>()("OpenAi", {
   effect: Effect.gen(function*() {
-    // TODO: Implement `use` method
-    return {} as const
+    const client = new Api.OpenAI({
+      apiKey: Redacted.value(yield* Config.redacted("OPENAI_API_KEY"))
+    }) // no need to kill the client, otherwise use acquireRelease
+
+    // Effect.fn add a span => telemetry (same sa Effect.withSpan)
+    const use = Effect.fn("OpenAI.use")(<A>(
+      f: (client: Api.OpenAI, signal: AbortSignal) => Promise<A>
+    ): Effect.Effect<A, OpenAIError> =>
+      Effect.tryPromise({
+        try: (signal) => f(client, signal),
+        catch: (cause) => new OpenAIError({ cause })
+      })
+    )
+
+    return {
+      use
+    } as const
   })
 }) {}
 
